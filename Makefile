@@ -20,7 +20,7 @@ build-node: test
 	docker build --rm --compress -t $(OWNER)/$(NODE) ./nodejs
 
 test-node: build-node
-	docker run --rm $(OWNER)/$(NODE) npm -v && node -v
+	docker run --rm $(OWNER)/$(NODE) sh -c "npm -v && node -v"
 
 push: test-node
 	docker push $(OWNER)/$(BASE)
