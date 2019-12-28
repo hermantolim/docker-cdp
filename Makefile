@@ -1,30 +1,34 @@
-OWNER:=hermantolim
-BASE:=chromium:bionic
-NODE:=chromium:12.14.0-bionic
+USER := hermantolim
+NODE_VERSION := 12
+BASE := bionic
+NODE := node:$(NODE_VERSION)-$(BASE)
+PPTR := pptr:$(NODE_VERSION)-$(BASE)
+ARG_BUILD := build --rm --compress -t
 
-.PHONY: clean build test build-node test-node push
+.PHONY: all clean build-node test-node build-pptr test-pptr
 
 clean:
 	docker container prune -f
-	docker image rm -f $(OWNER)/$(BASE) $(OWNER)/$(NODE) $(OWNER)/$(NODE)-test
+	docker image prune -f
+	docker image rm -f $(USER)/$(NODE) $(USER)/$(PPTR) >/dev/null 2>&1
 
-build: clean
-	docker build --rm --compress -t $(OWNER)/$(BASE) ./base
-
-test: build
-	docker run --rm $(OWNER)/$(BASE) sh -c "/usr/bin/id -G -n"
-	docker run --rm $(OWNER)/$(BASE) sh -c "/usr/bin/chromium-browser --dump-dom https://httpbin.org/anything"
-	docker run --rm $(OWNER)/$(BASE) chromium-browser --dump-dom https://httpbin.org/status/200
-
-build-node: test
-	docker build --rm --compress -t $(OWNER)/$(NODE) ./nodejs
+build-node: clean
+	docker $(ARG_BUILD) $(USER)/$(NODE) ./node/$(NODE_VERSION)
 
 test-node: build-node
-	docker build --rm --compress -t $(OWNER)/$(NODE)-test ./test
-	docker run --rm $(OWNER)/$(NODE)-test sh -c "npm -v && node -v"
-	docker run --rm $(OWNER)/$(NODE)-test npm start
-	docker image rm $(OWNER)/$(NODE)-test
+	docker run --rm $(USER)/$(NODE) sh -c "echo 'console.log(\"hello world\")' | node -"
 
-push: test-node
-	docker push $(OWNER)/$(BASE)
-	docker push $(OWNER)/$(NODE)
+build-pptr: test-node
+	docker $(ARG_BUILD) $(USER)/$(PPTR) ./pptr
+
+test-pptr: build-pptr
+	docker run --rm $(USER)/$(PPTR) /usr/bin/chromium-browser --no-sandbox --headless --disable-gpu --dump-dom https://httpbin.org/anything
+
+gen-node: test
+	exec generate-node-dockerfile.sh
+
+all: test-pptr
+
+push: all
+	docker push $(USER)/$(NODE)
+	docker push $(USER)/$(PPTR)
