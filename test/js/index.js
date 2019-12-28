@@ -2,21 +2,33 @@ const puppeteer = require('puppeteer')
 const devices = require('puppeteer/DeviceDescriptors');
 
 async function main() {
-    const browser = await puppeteer.launch({
-        executablePath: "/usr/bin/chromium-browser"
-    })
+    const dev = devices[
+        Math.floor(
+            Math.random() * (devices.length - 1)
+        )
+    ]
+    let browser
+    try {
+        browser = await puppeteer.launch()
+        const page = await browser.newPage()
 
-    const page = await browser.newPage()
+        await page.emulate(dev)
+        await page.goto('https://httpbin.org/anything')
 
-    await page.emulate(devices['iPhone 6'])
-    await page.goto('https://google.com/ncr')
-    await page.screenshot({
-        path: 'full.png',
-        fullPage: true
-    })
+        const headers = await page
+            .evaluate(() => document.body.innerText)
+            .then(c => JSON.parse(c).headers)
 
-    console.log(await page.title())
-    await browser.close()
+        if (headers["User-Agent"] !== dev.userAgent) {
+            throw new Error("device assertion failed")
+        }
+
+        console.log(headers)
+    } catch (e) {
+        console.log(e.message)
+    } finally {
+        browser && await browser.close()
+    }
 }
 
 main()
