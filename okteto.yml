@@ -1,0 +1,4 @@
+name: docker-cdp
+image: okteto/desk:latest
+command:
+- bash
