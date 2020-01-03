@@ -40,6 +40,7 @@ path-exclude=/usr/share/locale-langpack/*
 path-exclude=/etc/locale.alias
 path-exclude=/*lib/systemd/*
 path-exclude=/etc/systemd/system/*
+path-exclude=*mkfs*
 
 path-include=/usr/share/*locale*/en
 path-include=/usr/share/*locale*/en_??
@@ -51,11 +52,12 @@ path-include=/usr/share/*locales/iso*
 path-include=/usr/share/*locales/*ctype*
 path-include=/usr/share/locale/locale.alias
 path-include=/usr/share/X11/locale/locale.alias
-path-include=/usr/share/icons/hicolor/scalable
-path-include=/usr/share/icons/hicolor/symbolic
-path-include=/usr/share/icons/hicolor/cursor
 path-include=/usr/share/icons/*/*.theme
 path-include=/usr/share/icons/*/*.cache
+
+path-exclude=/usr/lib/chromium-browser/default_apps/*
+path-exclude=/usr/lib/chromium-browser/locales/*
+path-include=/usr/lib/chromium-browser/locales/en*
 path-exclude=/opt/google/chrome/default_apps/*
 path-exclude=/opt/google/chrome/locales/*
 path-include=/opt/google/chrome/locales/en*
